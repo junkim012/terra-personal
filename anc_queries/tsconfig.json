@@ -1,0 +1,20 @@
+{
+  "extends": "rocket-punch/tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "src",
+    "strict": false,
+    "alwaysStrict": false,
+    "strictNullChecks": false,
+    "strictBindCallApply": false,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false,
+    "target": "ES6",
+    "lib": [
+      "ES2020",
+      "ES2020.Promise",
+      "ES2015",
+      "ES2015.Promise",
+      "dom"
+    ]
+  }
+}

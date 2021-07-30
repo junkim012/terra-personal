@@ -56,30 +56,71 @@ export function read(file_number: number, file: string, pl_data: withdraw_liquid
         const execute_msg = value2['execute_msg'];
 
         const json_msg = JSON.parse(Buffer.from(execute_msg, 'base64').toString());
-        //console.log(json_msg);
-
-        if (json_msg.send.msg.withdraw_liquidity) {
-            console.log('withdraw_liquidity');
-
-            pl_data.push({
-                time_stamp: time_stamp,
-                sender: sender,
-                msg_type: 'withdraw_liquidity',
-                offer_token: 'ANC-UST-LP',
-                offer_token_amount: json_msg.send.amount,
-           
-                ask_native_token: '',
-                ask_native_token_amount: '',
-                // native_token_amount_running_sum: native_token_rs.toString()
-                ask_token: '',
-                ask_token_amount: ''
-            })
-
-        }
 
         if (json_msg.send) {
-              action_data.send = action_data.send + 1;
+            const send_msg = JSON.parse(Buffer.from(json_msg.send.msg, 'base64').toString()); 
+
+            if (send_msg.withdraw_liquidity) {
+                console.log(send_msg);
+
+                
+
+                pl_data.push({
+                    time_stamp: time_stamp,
+                    sender: sender,
+                    msg_type: 'withdraw_liquidity',
+                    offer_token: 'ANC-UST-LP',
+                    offer_token_amount: json_msg.send.amount,
+               
+                    ask_native_token: '',
+                    ask_native_token_amount: '',
+                    // native_token_amount_running_sum: native_token_rs.toString()
+                    ask_token: '',
+                    ask_token_amount: ''
+                })
+    
+                if (entry['logs']) {
+                    const from_contract = entry['logs'][1];
+                    // console.log(from_contract);
+                }
+
+            }
+
         }
+    }
+}
+
+                    //             if (entry['logs']) {
+        //                 const logs = entry['logs']; 
+        //                 //console.log('logs: ', logs);
+        //                 const log = logs[1];
+        //                 //console.log('log: ', log);
+        //                 const events = log['events'];
+        //                 //console.log('events: ', events);
+        //                 const event = events[1];
+        //                 //console.log('event: ', event);
+        //                 const attributes: [] = event['attributes'];
+        //                 //console.log('attributes: ', attributes);
+
+        //                 for (let i = 0; i < attributes.length; i++) {
+        //                     if (attributes[i]["value"] == "mint") {
+        //                         // console.log('i: ', i);
+        //                         const object: object = attributes[i+2];
+        //                         // console.log(object);
+        //                         mint_amount = object['value'];
+        //                     }
+        //                 }
+        //             } else {
+        //                 console.log("entry did not have the 'logs' field")
+        //                 //console.log(entry);
+        //                 //console.log(entry['log']);
+        //                 mint_amount = 0;
+        //             }
+                  
+        //             // const attributes: [] = entry['logs'][1]['events'][1]['attributes'];
+        //             console.log('mint_amount: ', mint_amount);
+
+        
 
         // if (json_msg.increase_allowance) {
         //     // increase allowance + provide liquidity
@@ -183,7 +224,7 @@ export function read(file_number: number, file: string, pl_data: withdraw_liquid
         //     action_data.provide_liquidity = action_data.provide_liquidity + 1;
         // }
     
-    }
+    
 
     // tx_array.forEach((object) => {
     //     const tx = object['tx'];
@@ -227,7 +268,7 @@ export function read(file_number: number, file: string, pl_data: withdraw_liquid
     //         console.log(json_msg);
     //     })
     // })
-}
+
 
 export function loop() {
     const wl_data: withdraw_liquidity_data = [];
@@ -242,8 +283,8 @@ export function loop() {
     const token_rs = 0;
     const native_token_rs = 0; 
 
-    for (let i = 162; i > 0; i--) {
-        var file = `anc-ust-results-${i}.txt`;
+    for (let i = 106; i > 0; i--) {
+        var file = `../fcd-data/anc-ust-lp/anc-ust-lp-results-${i}.txt`;
         console.log('reading: ', file);
         read(i, file, wl_data, action_data, token_rs, native_token_rs);
     }
@@ -251,9 +292,9 @@ export function loop() {
     console.log(wl_data);
     console.log(action_data);
 
-    // write pl_data to .txt 
+    // write wl_data to .txt 
     JSON.stringify(wl_data);
-    fs.writeFile(`anc-ust-history.json`, JSON.stringify(wl_data),
+    fs.writeFile(`../results/anc-ust-wl-history.json`, JSON.stringify(wl_data),
     function(err) {
       if (err) {
         console.error('error');

@@ -59,23 +59,27 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
         const execute_msg = value2['execute_msg'];
 
         const json_msg = JSON.parse(Buffer.from(execute_msg, 'base64').toString());
-        // console.log(json_msg);
+        //console.log(json_msg);
+        console.log(txhash);
         if (json_msg.send) {
-            console.log('json_msg.send');
+            console.log('json_msg.send exists');
             action_data.send = action_data.send + 1;
             const msg = JSON.parse(Buffer.from(json_msg.send.msg, 'base64').toString());
-
-            if (msg.swap || msg.execute_swap_operations) {
-                console.log('is swap');
+    
+            if (msg.execute_swap_operations) {
+                console.log('is execute_swap_operations'); 
+            }
+            if (msg.swap || msg.execute_swap_operations) { // || msg.execute_swap_operations
+                console.log('msg.swap || msg.execute_swap_operations');
                 if (entry['logs']) {
                     console.log('inside entry[logs');
                     const from_contract = entry['logs'][0]['events'][1];
                     const attributes: [] = from_contract['attributes']
     
-                    let offer_asset; 
-                    let ask_asset;
-                    let offer_amount;
-                    let ask_amount;
+                    let offer_asset = 'a'; 
+                    let ask_asset = 'a';
+                    let offer_amount = 'a';
+                    let ask_amount = 'a';
                     for (let i = 0; i < attributes.length; i++) {
                         if (attributes[i]["key"] == "offer_asset") {
                             offer_asset = attributes[i]["value"];  
@@ -89,50 +93,63 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                         if (attributes[i]["key"] == "return_amount") {
                             ask_amount = attributes[i]["value"]; 
                         }
+                        if (offer_asset != 'a' && ask_asset != 'a' && offer_amount != 'a'&& ask_amount != 'a') {
+                            break; 
+                        } 
                     }
     
-                    if (offer_asset == "uusd") {
+                    if (offer_asset == "uusd" && ask_asset == "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76") {
                         // uusd to anc 
                         console.log('pushing to ust_anc_data');
+                        console.log('THIS TRANSACTION WAS JSON_MSG.SEND BUT IS UST->ANC');
+                        console.log(entry);
                         console.log(txhash);
+                        const to_push =  {
+                            time_stamp: time_stamp,
+                            sender: sender,
+                            msg_type: 'swap',
+                            offer_asset: "uusd",
+                            offer_amount: offer_amount,
+                            ask_asset: "uanc",
+                            ask_amount: ask_amount
+                        }
                         ust_anc_data.push(
-                            {
-                                time_stamp: time_stamp,
-                                sender: sender,
-                                msg_type: 'swap',
-                                offer_asset: "uusd",
-                                offer_amount: offer_amount,
-                                ask_asset: "uanc",
-                                ask_amount: ask_amount
-                            }
+                           to_push
                         )
-                    } 
-    
-                    if (offer_asset == "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76") {
+                        console.log(to_push);
+                    } else if (offer_asset == "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76" && ask_asset == "uusd") {
                         // anc to uusd
                         console.log('pushing to anc_ust_data');
+                        const to_push = {
+                            time_stamp: time_stamp,
+                            sender: sender,
+                            msg_type: 'swap',
+                            offer_asset: "uanc",
+                            offer_amount: offer_amount,
+                            ask_asset: "uusd",
+                            ask_amount: ask_amount
+                        }
                         anc_ust_data.push(
-                            {
-                                time_stamp: time_stamp,
-                                sender: sender,
-                                msg_type: 'swap',
-                                offer_asset: "uanc",
-                                offer_amount: offer_amount,
-                                ask_asset: "uusd",
-                                ask_amount: ask_amount
-                            }
+                            to_push
                         )
+                        console.log(to_push);
+                    } else {
+                        console.log('json_msg.send but transaction involves other tokens, second if');
+                        console.log(offer_asset, ask_asset);
                     }
 
                 } else {
-                    console.log("entry[logs] doesn't exist: ", tx);
+                    //console.log("entry[logs] doesn't exist: ", tx);
                 }
+
+
                 
             } else {
-                console.log("no msg.swap: ", msg);
+                //console.log("no msg.swap: ", msg);
             }
         } else {
-            // console.log("no json_msg.send, json_msg: ", json_msg.swap);
+            //console.log("no json_msg.send, json_msg: ", json_msg);
+            
             // no json_msg.send, json_msg:  {
             //     swap: {
             //       belief_price: '7.638222814322813',
@@ -145,15 +162,16 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
         if (json_msg.swap) {
             // handle these cases separately 
             console.log('json_msg.swap');
+            action_data.swap++;
             if (entry['logs']) {
                 console.log('inside entry[logs]');
                 const from_contract = entry['logs'][0]['events'][1];
                 const attributes: [] = from_contract['attributes']
 
-                let offer_asset; 
-                let ask_asset;
-                let offer_amount;
-                let ask_amount;
+                let offer_asset = ''; 
+                let ask_asset = '';
+                let offer_amount = '';
+                let ask_amount = '';
                 for (let i = 0; i < attributes.length; i++) {
                     if (attributes[i]["key"] == "offer_asset") {
                         offer_asset = attributes[i]["value"];  
@@ -169,7 +187,7 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                     }
                 }
 
-                if (offer_asset == "uusd") {
+                if (offer_asset == "uusd" && ask_asset == "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76") {
                     // uusd to anc 
                     console.log('pushing to ust_anc_data');
                     console.log(txhash);
@@ -187,9 +205,7 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                     )
 
                     // console.log(to_push);
-                } 
-
-                if (offer_asset == "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76") {
+                } else if (offer_asset == "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76" && ask_asset == "uusd") {
                     // anc to uusd
                     console.log('pushing to anc_ust_data');
                     const to_push = {
@@ -205,10 +221,15 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                         to_push
                     )
                     // console.log(to_push);
+                } else {
+                    console.log("json_msg.swap but transaction includes other tokens, second if")
+                    console.log(offer_asset, ask_asset);
                 }
             } else {
-                console.log('no entry[logs] because failed execution');
+                //console.log('no entry[logs] because failed execution');
             }
+        } else {
+            //console.log('no json_msg.swap', json_msg);
         }
     }
 }
@@ -240,30 +261,65 @@ export function loop() {
     console.log('anc_ust_data length: ', anc_ust_data.length);
     console.log('ust_anc_data length: ', ust_anc_data.length);
     
-    let offer_anc_sum = 0;
+    let anc_offer_sum = 0;
+    let usd_ask_sum = 0; 
     anc_ust_data.forEach((entry) => {
-        offer_anc_sum += Number(entry.offer_amount); 
+        anc_offer_sum += Number(entry.offer_amount); 
+        usd_ask_sum += Number(entry.ask_amount);
     })
 
-    let offer_ust_sum = 0;
-
-
-
-
-    // write pl_data to .txt 
-    JSON.stringify(anc_ust_data);
-    fs.writeFile(`../results/anc-ust-swap-history.json`, JSON.stringify(anc_ust_data),
-    function(err) {
-      if (err) {
-        console.error('error');
-      }
+    let usd_offer_sum = 0;
+    let anc_ask_sum = 0; 
+    ust_anc_data.forEach((entry) => {
+        usd_offer_sum += Number(entry.offer_amount); 
+        anc_ask_sum += Number(entry.ask_amount);
     })
+
+    console.log('total anc offer amount: :', anc_offer_sum); // 2,091,205 anc tokens
+    console.log('total ust ask amount: ', usd_ask_sum ); // 3,643,372 dollars 
+    console.log('total ust offer amount: ', usd_offer_sum); // 285,787,387 dollars 
+    console.log('total anc ask amount: ', anc_ask_sum); // 66,151,684,685,879 anc tokens 
+
+
+    // write swap data to .txt 
+    // JSON.stringify(anc_ust_data);
+    // fs.writeFile(`../results/anc-ust-swap-history.json`, JSON.stringify(anc_ust_data),
+    // function(err) {
+    //   if (err) {
+    //     console.error('error');
+    //   }
+    // })
+
+    // JSON.stringify(ust_anc_data);
+    // fs.writeFile(`../results/ust-anc-swap-history.json`, JSON.stringify(ust_anc_data),
+    // function(err) {
+    //   if (err) {
+    //     console.error('error');
+    //   }
+    // })
 
 
 
 }
 
 loop();
+
+// NOTE
+
+// Most of 'send' msg is anc->ust
+// 9913-8963 = 950 of 'send' msg is ust -> anc 
+// Most of 'swap' msg is ust -> anc 
+// 58817 - 56017 = 2800 of 'swap' msg is anc -> ust 
+// 
+// {
+//     send: 9913,
+//     increase_allowance: 0,
+//     swap: 58817,
+//     provide_liquidity: 0,
+//     other: 0
+//   }
+//   anc_ust_data length:  8963
+//   ust_anc_data length:  56017
 
 
 // starting from 163 

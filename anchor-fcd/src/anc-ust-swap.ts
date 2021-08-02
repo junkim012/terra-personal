@@ -31,8 +31,12 @@ type action_data = {
     send: number,
     increase_allowance: number,
     swap: number, 
-    provide_liquidity: number
-    other: number
+    provide_liquidity: number,
+    error_send: number,
+    error_swap: number, 
+    send_other: number,
+    send_different_token: number,
+    neither_send_swap: number,
 }
 
 type swap_data = swap_tx[];
@@ -101,7 +105,7 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                     if (offer_asset == "uusd" && ask_asset == "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76") {
                         // uusd to anc 
                         console.log('pushing to ust_anc_data');
-                        console.log('THIS TRANSACTION WAS JSON_MSG.SEND BUT IS UST->ANC');
+                        console.error('THIS TRANSACTION WAS JSON_MSG.SEND BUT IS UST->ANC');
                         console.log(entry);
                         console.log(txhash);
                         const to_push =  {
@@ -136,16 +140,16 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                     } else {
                         console.log('json_msg.send but transaction involves other tokens, second if');
                         console.log(offer_asset, ask_asset);
+                        action_data.send_different_token++;
                     }
 
                 } else {
-                    //console.log("entry[logs] doesn't exist: ", tx);
+                    console.log("entry[logs] doesn't exist: ", tx);
+                    action_data.error_send++;
                 }
-
-
-                
             } else {
-                //console.log("no msg.swap: ", msg);
+                console.log("no msg.swap: ", msg);
+                action_data.send_other++;
             }
         } else {
             //console.log("no json_msg.send, json_msg: ", json_msg);
@@ -207,6 +211,7 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                     // console.log(to_push);
                 } else if (offer_asset == "terra14z56l0fp2lsf86zy3hty2z47ezkhnthtr9yq76" && ask_asset == "uusd") {
                     // anc to uusd
+                    console.error('JSON_MSG.SWAP BUT ANC->UST', entry);
                     console.log('pushing to anc_ust_data');
                     const to_push = {
                         time_stamp: time_stamp,
@@ -226,10 +231,16 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                     console.log(offer_asset, ask_asset);
                 }
             } else {
-                //console.log('no entry[logs] because failed execution');
+                console.log('no entry[logs] because failed execution');
+                action_data.error_swap++;
             }
         } else {
             //console.log('no json_msg.swap', json_msg);
+        }
+
+        if (!json_msg.send && !json_msg.swap) {
+            console.error("neither", json_msg);
+            action_data.neither_send_swap++;
         }
     }
 }
@@ -243,7 +254,11 @@ export function loop() {
         increase_allowance: 0,
         swap: 0,
         provide_liquidity: 0,
-        other: 0
+        error_send: 0,
+        error_swap: 0,
+        send_other: 0,
+        send_different_token: 0,
+        neither_send_swap: 0
     };
 
     const token_rs = 0;
@@ -282,21 +297,21 @@ export function loop() {
 
 
     // write swap data to .txt 
-    // JSON.stringify(anc_ust_data);
-    // fs.writeFile(`../results/anc-ust-swap-history.json`, JSON.stringify(anc_ust_data),
-    // function(err) {
-    //   if (err) {
-    //     console.error('error');
-    //   }
-    // })
+    JSON.stringify(anc_ust_data);
+    fs.writeFile(`../results/anc-ust-swap-history.json`, JSON.stringify(anc_ust_data),
+    function(err) {
+      if (err) {
+        console.error('error');
+      }
+    })
 
-    // JSON.stringify(ust_anc_data);
-    // fs.writeFile(`../results/ust-anc-swap-history.json`, JSON.stringify(ust_anc_data),
-    // function(err) {
-    //   if (err) {
-    //     console.error('error');
-    //   }
-    // })
+    JSON.stringify(ust_anc_data);
+    fs.writeFile(`../results/ust-anc-swap-history.json`, JSON.stringify(ust_anc_data),
+    function(err) {
+      if (err) {
+        console.error('error');
+      }
+    })
 
 
 

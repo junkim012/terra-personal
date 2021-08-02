@@ -271,7 +271,7 @@ export function loop() {
     const native_token_rs = 0; 
 
     for (let i = 162; i > 0; i--) {
-        var file = `../fcd_data/anc-ust-results-${i}.txt`;
+        var file = `../fcd-data/anc-ust-pair/anc-ust-results-${i}.txt`;
         console.log('reading: ', file);
         read(i, file, pl_data, action_data, token_rs, native_token_rs);
     }

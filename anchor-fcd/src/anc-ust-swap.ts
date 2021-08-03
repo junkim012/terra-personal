@@ -18,6 +18,7 @@ type data = {
 }
 
 type swap_tx = {
+    txhash: string, 
     time_stamp: string,
     msg_type: string,
     sender: string,
@@ -109,6 +110,7 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                         console.log(entry);
                         console.log(txhash);
                         const to_push =  {
+                            txhash: txhash,
                             time_stamp: time_stamp,
                             sender: sender,
                             msg_type: 'swap',
@@ -125,6 +127,7 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                         // anc to uusd
                         console.log('pushing to anc_ust_data');
                         const to_push = {
+                            txhash: txhash,
                             time_stamp: time_stamp,
                             sender: sender,
                             msg_type: 'swap',
@@ -196,6 +199,7 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                     console.log('pushing to ust_anc_data');
                     console.log(txhash);
                     const to_push = {
+                        txhash: txhash,
                         time_stamp: time_stamp,
                         sender: sender,
                         msg_type: 'swap',
@@ -214,6 +218,7 @@ export function read(file_number: number, file: string, anc_ust_data: swap_data,
                     console.error('JSON_MSG.SWAP BUT ANC->UST', entry);
                     console.log('pushing to anc_ust_data');
                     const to_push = {
+                        txhash: txhash,
                         time_stamp: time_stamp,
                         sender: sender,
                         msg_type: 'swap',

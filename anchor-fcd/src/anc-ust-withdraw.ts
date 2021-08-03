@@ -11,6 +11,7 @@ cases:
 var fs = require("fs");
 
 type withdraw_liquidity_tx = {
+    txhash: string, 
     time_stamp: string,
     msg_type: string,
     sender: string,
@@ -89,12 +90,12 @@ export function read(file_number: number, file: string, pl_data: withdraw_liquid
         
                             action_data.withdraw_liquidity++;
                             pl_data.push({
+                                txhash: txhash,
                                 time_stamp: time_stamp,
                                 sender: sender,
                                 msg_type: 'withdraw_liquidity',
                                 offer_token: 'ANC-UST-LP',
                                 offer_token_amount: offer_token_amount,
-                           
                                 ask_native_token: 'uusd',
                                 ask_native_token_amount: uusd,
                                 // native_token_amount_running_sum: native_token_rs.toString()

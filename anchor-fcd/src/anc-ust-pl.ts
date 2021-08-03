@@ -36,6 +36,7 @@ type data = {
 }
 
 type provide_liquidity_tx = {
+    txhash: string,
     time_stamp: string,
     msg_type: string,
     sender: string,
@@ -68,7 +69,9 @@ export function read(file_number: number, file: string, pl_data: provide_liquidi
     for (var i = tx_array.length - 1; i >= 0; i--) {
         let entry = tx_array[i];
 
+        const txhash = entry['txhash']; 
         const time_stamp = entry['timestamp'];
+        
 
         const tx = entry['tx'];
         const value = tx['value'];
@@ -77,36 +80,6 @@ export function read(file_number: number, file: string, pl_data: provide_liquidi
         const value2 = msg[0]['value'];
         const sender = value2['sender'];
         const execute_msg = value2['execute_msg'];
-
-        
-        // const logs = entry['logs']; 
-        // console.log('logs: ', logs);
-        // const log = logs[1];
-        // console.log('log: ', log);
-        // const events = log['events'];
-        // console.log('events: ', events);
-        // const event = events[1];
-        // console.log('event: ', event);
-        // const attributes: [] = event['attributes'];
-        // console.log('attributes: ', attributes);
-
-        // console.log(attributes.length);
-
-        // //const attributes: [] = entry['logs'][1]['events'][1]['attributes'];
-        // let mint_amount: number
-        // for (let i = 0; i < attributes.length; i++) {
-        //     if (attributes[i]["key"] == "mint") {
-        //         mint_amount = attributes[i+2];
-        //     }
-        // }
-        // attributes.forEach((item, i) => {
-        //     if (item["key"] == "mint") {
-        //         mint_amount = attributes[i+2];
-        //     }
-        // })
-        
-
-
 
         const json_msg = JSON.parse(Buffer.from(execute_msg, 'base64').toString());
         //console.log(json_msg);
@@ -179,6 +152,7 @@ export function read(file_number: number, file: string, pl_data: provide_liquidi
 
                         pl_data.push(
                             {
+                                txhash: txhash,
                                 time_stamp: time_stamp,
                                 sender: sender,
                                 msg_type: 'provide_liquidity',
@@ -212,49 +186,6 @@ export function read(file_number: number, file: string, pl_data: provide_liquidi
         }
     
     }
-
-    // tx_array.forEach((object) => {
-    //     const tx = object['tx'];
-    //     const value = tx['value'];
-    //     const msg = value['msg'];
-    //     const value2 = msg[0]['value'];
-    //     const sender = value2['sender'];
-    //     const execute_msg = value2['execute_msg'];
-
-    //     const json_msg = JSON.parse(Buffer.from(execute_msg, 'base64').toString());
-    //     // console.log(json_msg);
-    //     if (json_msg.increase_allowance) {
-
-    //         const token = json_msg.provide_liquidity.assets[0].info.token.contract_addr;
-    //         const token_amount = json_msg.provide_liquidity.assets[0].info.amount;
-    //         const native_token = json_msg.provide_liquidity.assets[1].info.native_token.denom;
-    //         const native_token_amount = json_msg.provide_liquidity.assets[1].info.amount;
-                
-    //         data.push(
-    //             {
-    //                 token: token,
-    //                 token_amount: token_amount,
-    //                 native_token: native_token,
-    //                 native_token_amount: native_token_amount
-    //             }
-    //         )
-    //     }
-    // })
-
-    // fs.readFile(file, function(text) {
-    //     var tx_array = JSON.parse(text)
-    //     console.log(tx_array);
-    //     tx_array.forEach((tx) => {
-    //         const value = tx['value'];
-    //         const msg = value['msg'];
-    //         const value2 = msg[0]['value'];
-    //         const sender = value2['sender'];
-    //         const execute_msg = value2['execute_msg'];
-
-    //         const json_msg = JSON.parse(Buffer.from(execute_msg, 'base64').toString());
-    //         console.log(json_msg);
-    //     })
-    // })
 }
 
 export function loop() {
